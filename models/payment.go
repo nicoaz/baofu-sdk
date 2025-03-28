@@ -1,5 +1,18 @@
 package models
 
+type UnifiedOrderRequest struct {
+	OutTradeNo   string // 商户订单号
+	Amount       int    // 交易金额（分）
+	PayCode      string // 支付方式
+	GoodsDesc    string // 商品描述
+	ClientIP     string // 客户端IP
+	SubAppID     string // 收单二级商户ID
+	SubOpenID    string // 二级商户下用户OpenID
+	Attach       string // 附加数据
+	ForbidCredit string // 是否禁止信用卡支付 1禁止 0或者""不禁用
+	NotifyURL    string // 异步通知地址
+}
+
 // BizContent 业务参数
 type BizContent struct {
 	AgentMerID   string    `json:"agentMerId,omitempty"` // 代理商户号
@@ -18,6 +31,7 @@ type BizContent struct {
 	SubMchID     string    `json:"subMchId,omitempty"`   // 子商户号
 	NotifyURL    string    `json:"notifyUrl"`            // 异步通知地址
 	ForbidCredit string    `json:"forbidCredit"`         // 是否禁止信用卡支付
+	Attach       string    `json:"attach,omitempty"`     // 附加数据
 	RiskInfo     RiskInfo  `json:"riskInfo,omitempty"`   // 风控信息
 }
 

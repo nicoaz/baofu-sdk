@@ -34,54 +34,55 @@ func (s *PaymentService) getHost() string {
 }
 
 // CreateUnifiedOrder 创建统一支付订单
-func (s *PaymentService) CreateUnifiedOrder(outTradeNo string, amount int, payCode, goodsDesc, clientIP, SubAppID, SubOpenID, notifyURL string) (*models.UnifiedOrderDataContent, error) {
+func (s *PaymentService) CreateUnifiedOrder(req *models.UnifiedOrderRequest) (*models.UnifiedOrderDataContent, error) {
 
 	// 构建业务内容
 	bizContent := models.BizContent{
 		MerID:        s.config.MerchantID,
 		TerID:        s.config.TerminalID,
-		OutTradeNo:   outTradeNo,
-		TxnAmt:       amount,
+		OutTradeNo:   req.OutTradeNo,
+		TxnAmt:       req.Amount,
 		TxnTime:      utils.GetTimeFormat("YmdHis"),
-		TotalAmt:     amount,
+		TotalAmt:     req.Amount,
 		TimeExpire:   "120",
 		ProdType:     "SHARING", // SHARING:分账产品,ORDINARY:普通产品
 		OrderType:    "7",
-		PayCode:      payCode,
+		PayCode:      req.PayCode,
 		SubMchID:     "756405755", // 子商户号
-		NotifyURL:    notifyURL,
-		ForbidCredit: "0", // 1：禁止,0：不禁止
+		NotifyURL:    req.NotifyURL,
+		ForbidCredit: req.ForbidCredit, // 1：禁止,0：不禁止
+		Attach:       req.Attach,
 		RiskInfo: models.RiskInfo{
 			LocationPoint: "",
-			ClientIP:      clientIP,
+			ClientIP:      req.ClientIP,
 		},
 	}
 
 	// 设置支付扩展信息
 	payExtend := models.PayExtend{}
-	if len(payCode) >= 6 && payCode[:6] == "WECHAT" {
+	if len(req.PayCode) >= 6 && req.PayCode[:6] == "WECHAT" {
 		// 微信支付
-		payExtend.Body = goodsDesc
+		payExtend.Body = req.GoodsDesc
 
-		if payCode == "WECHAT_JSAPI" {
-			payExtend.SubAppID = SubAppID   // 实际项目中应设置正确的AppID
-			payExtend.SubOpenID = SubOpenID // 实际项目中应设置正确的OpenID
-		} else if payCode == "WECHAT_MICROPAY" {
+		if req.PayCode == "WECHAT_JSAPI" {
+			payExtend.SubAppID = req.SubAppID   // 实际项目中应设置正确的AppID
+			payExtend.SubOpenID = req.SubOpenID // 实际项目中应设置正确的OpenID
+		} else if req.PayCode == "WECHAT_MICROPAY" {
 			payExtend.TerminalInfo = &models.TerminalInfo{
-				PayCode:  payCode,
+				PayCode:  req.PayCode,
 				DeviceID: "",
 			}
 		}
-	} else if len(payCode) >= 6 && payCode[:6] == "ALIPAY" {
+	} else if len(req.PayCode) >= 6 && req.PayCode[:6] == "ALIPAY" {
 		// 支付宝
-		payExtend.Subject = goodsDesc
+		payExtend.Subject = req.GoodsDesc
 		payExtend.AreaInfo = ""
 
-		if payCode == "ALIPAY_JSAPI" {
+		if req.PayCode == "ALIPAY_JSAPI" {
 			payExtend.BuyerID = "" // 实际项目中应设置正确的买家ID
-		} else if payCode == "ALIPAY_MICROPAY" {
+		} else if req.PayCode == "ALIPAY_MICROPAY" {
 			payExtend.TerminalInfo = &models.TerminalInfo{
-				PayCode:  payCode,
+				PayCode:  req.PayCode,
 				DeviceID: "",
 			}
 		}
