@@ -34,13 +34,13 @@ func (s *PaymentService) getHost() string {
 }
 
 // CreateUnifiedOrder 创建统一支付订单
-func (s *PaymentService) CreateUnifiedOrder(amount int, payCode, goodsDesc, clientIP, SubAppID, SubOpenID, notifyURL string) (*models.UnifiedOrderDataContent, error) {
+func (s *PaymentService) CreateUnifiedOrder(outTradeNo string, amount int, payCode, goodsDesc, clientIP, SubAppID, SubOpenID, notifyURL string) (*models.UnifiedOrderDataContent, error) {
 
 	// 构建业务内容
 	bizContent := models.BizContent{
 		MerID:        s.config.MerchantID,
 		TerID:        s.config.TerminalID,
-		OutTradeNo:   utils.GetTransid("pay"),
+		OutTradeNo:   outTradeNo,
 		TxnAmt:       amount,
 		TxnTime:      utils.GetTimeFormat("YmdHis"),
 		TotalAmt:     amount,
