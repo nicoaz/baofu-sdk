@@ -195,3 +195,14 @@ const (
 	RefundStateRefundError RefundState = "REFUND_ERROR" // 退款失败
 	RefundStateAbnormal    RefundState = "ABNORMAL"     // 退款异常，返回此状态的退款订单，请稍后发起查询。
 )
+
+type RefundQueryData struct {
+	TradeNo     string      `json:"tradeNo"`     // 宝付订单号
+	OutTradeNo  string      `json:"outTradeNo"`  // 商户订单号
+	RefundState RefundState `json:"refundState"` // 订单状态
+	FinishTime  string      `json:"finishTime"`  // 完成时间
+	SuccAmt     string      `json:"succAmt"`     // 成功金额 单位：分，订单状态为成功时才有值
+	ResultCode  string      `json:"resultCode"`  // 业务结果 SUCCESS：成功 FAIL：失败
+	ErrCode     string      `json:"errCode"`     // 错误代码 当业务结果FAIL时，返回错误代码
+	ErrMsg      string      `json:"errMsg"`      // 错误描述 当业务结果为FAIL时，返回错误描述
+}
