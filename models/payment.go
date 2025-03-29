@@ -146,16 +146,16 @@ type CloseOrderData struct {
 type RefundRequest struct {
 	// AgentMerId       string `json:"agentMerId,omitempty"`       // 代理商商户号
 	// AgentTerId       string `json:"agentTerId,omitempty"`       // 代理商终端号
-	MerId         string `json:"merId"`                   // 商户号
-	TerId         string `json:"terId"`                   // 终端号
-	MerchantName  string `json:"merchantName,omitempty"`  // 商户名称
-	OriginTradeNo string `json:"originTradeNo,omitempty"` // 原支付订单宝付交易号
-	//OriginOutTradeNo string `json:"originOutTradeNo,omitempty"` // 原支付订单商户订单号
-	OutTradeNo string `json:"outTradeNo"`          // 退款订单号
-	NotifyUrl  string `json:"notifyUrl,omitempty"` // 服务端通知地址
-	RefundAmt  int    `json:"refundAmt"`           // 退款金额 单位：分，退款金额不得大于用户实际付款金额
-	TotalAmt   int    `json:"totalAmt"`            // 退款总金额 如包含营销信息，则退款总金额=退款金额+营销退款总金额，反之退款总金额=退款金额
-	TxnTime    string `json:"txnTime"`             // 交易时间 订单交易时间
+	MerId            string `json:"merId"`                      // 商户号
+	TerId            string `json:"terId"`                      // 终端号
+	MerchantName     string `json:"merchantName,omitempty"`     // 商户名称
+	OriginTradeNo    string `json:"originTradeNo,omitempty"`    // 原支付订单宝付交易号
+	OriginOutTradeNo string `json:"originOutTradeNo,omitempty"` // 原支付订单商户订单号
+	OutTradeNo       string `json:"outTradeNo"`                 // 退款订单号
+	NotifyUrl        string `json:"notifyUrl,omitempty"`        // 服务端通知地址
+	RefundAmt        int    `json:"refundAmt"`                  // 退款金额 单位：分，退款金额不得大于用户实际付款金额
+	TotalAmt         int    `json:"totalAmt"`                   // 退款总金额 如包含营销信息，则退款总金额=退款金额+营销退款总金额，反之退款总金额=退款金额
+	TxnTime          string `json:"txnTime"`                    // 交易时间 订单交易时间
 
 	SharingRefundInfo []SharingRefundInfo `json:"sharingRefundInfo,omitempty"` // 分账退款信息
 	// MktRefundInfo     []MktRefundInfo     `json:"mktRefundInfo,omitempty"`     // 营销退款信息
