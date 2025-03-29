@@ -144,14 +144,54 @@ type CloseOrderData struct {
 
 // RefundRequest 退款请求
 type RefundRequest struct {
-	Method       string `json:"method"`       // 接口方法名
-	MerID        string `json:"merId"`        // 商户号
-	TerID        string `json:"terId"`        // 终端号
-	OutTradeNo   string `json:"outTradeNo"`   // 原商户订单号
-	OutRefundNo  string `json:"outRefundNo"`  // 商户退款单号
-	RefundAmount int    `json:"refundAmount"` // 退款金额（分）
+	// AgentMerId       string `json:"agentMerId,omitempty"`       // 代理商商户号
+	// AgentTerId       string `json:"agentTerId,omitempty"`       // 代理商终端号
+	MerId         string `json:"merId"`                   // 商户号
+	TerId         string `json:"terId"`                   // 终端号
+	MerchantName  string `json:"merchantName,omitempty"`  // 商户名称
+	OriginTradeNo string `json:"originTradeNo,omitempty"` // 原支付订单宝付交易号
+	//OriginOutTradeNo string `json:"originOutTradeNo,omitempty"` // 原支付订单商户订单号
+	OutTradeNo string `json:"outTradeNo"`          // 退款订单号
+	NotifyUrl  string `json:"notifyUrl,omitempty"` // 服务端通知地址
+	RefundAmt  int    `json:"refundAmt"`           // 退款金额 单位：分，退款金额不得大于用户实际付款金额
+	TotalAmt   int    `json:"totalAmt"`            // 退款总金额 如包含营销信息，则退款总金额=退款金额+营销退款总金额，反之退款总金额=退款金额
+	TxnTime    string `json:"txnTime"`             // 交易时间 订单交易时间
+
+	SharingRefundInfo []SharingRefundInfo `json:"sharingRefundInfo,omitempty"` // 分账退款信息
+	// MktRefundInfo     []MktRefundInfo     `json:"mktRefundInfo,omitempty"`     // 营销退款信息
+	//AdvanceAmt        int                 `json:"advanceAmt,omitempty"`        // 垫资金额
 	RefundReason string `json:"refundReason"` // 退款原因
-	SignStr      string `json:"signStr"`      // 签名字符串
-	Version      string `json:"version"`      // 版本号
-	Timestamp    string `json:"timestamp"`    // 时间戳
 }
+
+type SharingRefundInfo struct {
+	SharingMerId string `json:"sharingMerId"` // 宝付支付分配的商户号
+	SharingAmt   int    `json:"sharingAmt"`   // 分账金额，单位：分，如1元则传入100
+}
+
+type MktRefundInfo struct {
+	MktMerId string `json:"mktMerId"` // 宝付支付分配的商户号
+	MktAmt   int    `json:"mktAmt"`   // 分账金额，单位：分，如1元则传入100
+}
+
+type RefundResponse struct {
+	OriginTradeNo    string      `json:"originTradeNo"`    // 原支付订单宝付交易号
+	OriginOutTradeNo string      `json:"originOutTradeNo"` // 原支付订单商户订单号
+	OutTradeNo       string      `json:"outTradeNo"`       // 商户退款订单号
+	TradeNo          string      `json:"tradeNo"`          // 宝付退款交易号
+	RefundAmt        int         `json:"refundAmt"`        // 退款金额
+	TotalAmt         int         `json:"totalAmt"`         // 退款总金额
+	ResultCode       string      `json:"resultCode"`       // 业务结果 SUCCESS
+	RefundState      RefundState `json:"refundState"`      // 订单状态 REFUND
+	ErrCode          string      `json:"errCode"`          // 错误代码
+	ErrMsg           string      `json:"errMsg"`           // 错误描述
+	ReqReserved      string      `json:"reqReserved"`      // 请求方保留域
+}
+
+type RefundState string
+
+const (
+	RefundStateSuccess     RefundState = "SUCCESS"      // 退款成功
+	RefundStateRefund      RefundState = "REFUND"       // 退款受理成功
+	RefundStateRefundError RefundState = "REFUND_ERROR" // 退款失败
+	RefundStateAbnormal    RefundState = "ABNORMAL"     // 退款异常，返回此状态的退款订单，请稍后发起查询。
+)
