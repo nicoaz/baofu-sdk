@@ -102,6 +102,46 @@ type QueryOrderRequest struct {
 	Timestamp  string `json:"timestamp"`  // 时间戳
 }
 
+type QueryOrderData struct {
+	AgentMerID  string   `json:"agentMerId"` // 代理商商户号
+	AgentTerID  string   `json:"agentTerId"` // 代理商终端号
+	MerID       string   `json:"merId"`      // 商户号
+	TerID       string   `json:"terId"`      // 终端号
+	TradeNo     string   `json:"tradeNo"`    // 宝付交易号
+	OutTradeNo  string   `json:"outTradeNo"` // 商户订单号
+	TxnState    TxnState `json:"txnState"`   // 订单状态
+	FinishTime  string   `json:"finishTime"` // 完成时间
+	SuccAmt     int      `json:"succAmt"`    // 成功金额
+	FeeAmt      int      `json:"feeAmt"`     // 支付手续费
+	InstFeeAmt  int      `json:"instFeeAmt"` // 分期手续费
+	ResultCode  string   `json:"resultCode"` // 业务结果
+	ErrCode     string   `json:"errCode"`    // 错误代码
+	ErrMsg      string   `json:"errMsg"`     // 错误描述
+	ReqChlNo    string   `json:"reqChlNo"`   // 请求渠道订单号
+	PayCode     string   `json:"payCode"`    // 支付方式
+	ChlRetParam struct {
+		// 支付宝返回
+		BuyerID   string `json:"buyerId"`   // 买家支付宝用户号
+		AccountNo string `json:"accountNo"` // 支付宝会返回
+		// 微信返回
+		OpenID    string `json:"openId"`    // 用户在服务商公众号appid下的唯一标识
+		SubOpenID string `json:"subOpenid"` // 微信平台的sub_openid
+	} `json:"chlRetParam"` // 渠道返回参数
+	ClearingDate string `json:"clearingDate"` // 清算日期
+}
+
+type CloseOrderData struct {
+	AgentMerID string `json:"agentMerId"` // 代理商商户号
+	AgentTerID string `json:"agentTerId"` // 代理商终端号
+	MerID      string `json:"merId"`      // 商户号
+	TerID      string `json:"terId"`      // 终端号
+	TradeNo    string `json:"tradeNo"`    // 宝付订单号
+	OutTradeNo string `json:"outTradeNo"` // 商户订单号
+	ResultCode string `json:"resultCode"` // 业务结果 SUCCESS：成功，FAIL：失败
+	ErrCode    string `json:"errCode"`    // 错误代码 当业务结果FAIL时，返回错误代码
+	ErrMsg     string `json:"errMsg"`     // 错误描述 当业务结果为FAIL时，返回错误描述
+}
+
 // RefundRequest 退款请求
 type RefundRequest struct {
 	Method       string `json:"method"`       // 接口方法名

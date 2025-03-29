@@ -103,7 +103,7 @@ func (s *PaymentService) CreateUnifiedOrder(req *models.UnifiedOrderRequest) (*m
 
 	// 构建请求参数
 	mapParams := url.Values{}
-	mapParams.Set("method", "unified_order")
+	mapParams.Set("method", consts.MethodUnifiedOrder)
 	mapParams.Set("merId", s.config.MerchantID)
 	mapParams.Set("terId", s.config.TerminalID)
 	mapParams.Set("bizContent", string(bizContentJSON))
@@ -143,71 +143,142 @@ func (s *PaymentService) CreateUnifiedOrder(req *models.UnifiedOrderRequest) (*m
 		return nil, fmt.Errorf("签名验不通过")
 	}
 
-	var unifiedOrderDataContent models.UnifiedOrderDataContent
-	err = json.Unmarshal([]byte(payResponse.DataContent), &unifiedOrderDataContent)
+	var data models.UnifiedOrderDataContent
+	err = json.Unmarshal([]byte(payResponse.DataContent), &data)
 	if err != nil {
 		return nil, fmt.Errorf("解析响应失败: %v", err)
 	}
 
-	return &unifiedOrderDataContent, nil
+	return &data, nil
 }
 
 // QueryOrder 查询订单
-func (s *PaymentService) QueryOrder(outTradeNo string) (string, error) {
-	fmt.Println("==========================")
-	fmt.Println("订单查询")
-	fmt.Println("==========================")
+// tradeNo 宝付交易号
+func (s *PaymentService) QueryOrder(tradeNo string) (*models.QueryOrderData, error) {
 
 	// 构建请求内容
-	content := fmt.Sprintf("{\"merId\":\"%s\",\"terId\":\"%s\",\"outTradeNo\":\"%s\"}",
-		s.config.MerchantID, s.config.TerminalID, outTradeNo)
+	content := fmt.Sprintf("{\"merId\":\"%s\",\"terId\":\"%s\",\"tradeNo\":\"%s\"}",
+		s.config.MerchantID, s.config.TerminalID, tradeNo)
 
 	// 生成签名
 	signStr, err := utils.Sign(content, s.config.PrivateKey)
 	if err != nil {
-		return "", fmt.Errorf("生成签名失败: %v", err)
+		return nil, fmt.Errorf("生成签名失败: %v", err)
 	}
 
 	// 构建请求参数
 	mapParams := url.Values{}
-	mapParams.Set("method", "query_order")
+	mapParams.Set("method", consts.MethodOrderQuery)
 	mapParams.Set("merId", s.config.MerchantID)
 	mapParams.Set("terId", s.config.TerminalID)
-	mapParams.Set("outTradeNo", outTradeNo)
+	mapParams.Set("bizContent", content)
+	mapParams.Set("charset", "UTF-8")
 	mapParams.Set("signStr", signStr)
 	mapParams.Set("version", "1.0")
+	mapParams.Set("format", "json")
+	mapParams.Set("signType", "RSA")
+	mapParams.Set("signSn", "1")
+	mapParams.Set("ncrptnSn", "1")
 	mapParams.Set("timestamp", time.Now().Format("20060102150405"))
 
 	// 发送请求
 	response, err := s.httpClient.Post(s.getHost(), mapParams)
 	if err != nil {
-		return "", fmt.Errorf("发送订单查询请求失败: %v", err)
+		return nil, fmt.Errorf("发送订单查询请求失败: %v", err)
 	}
 
 	// 解析响应
 	var payResponse models.PayResponse
 	err = json.Unmarshal([]byte(response), &payResponse)
 	if err != nil {
-		return "", fmt.Errorf("解析响应失败: %v", err)
+		return nil, fmt.Errorf("解析响应失败: %v", err)
 	}
 
 	// 检查返回码
 	if payResponse.ReturnCode != "SUCCESS" {
-		return "", fmt.Errorf("订单查询失败: %s", payResponse.ReturnMsg)
+		return nil, fmt.Errorf("订单查询失败: %s", payResponse.ReturnMsg)
 	}
 
 	// 验证响应签名
 	verify, err := utils.VerifySign(payResponse.DataContent, payResponse.SignStr, s.config.BFPublicKey)
 	if err != nil {
-		return "", fmt.Errorf("验证响应签名失败: %v", err)
+		return nil, fmt.Errorf("验证响应签名失败: %v", err)
 	}
 	if !verify {
-		fmt.Println("警告：响应签名验证失败")
+		return nil, fmt.Errorf("签名验不通过")
 	}
 
-	fmt.Println("订单查询成功")
+	var data models.QueryOrderData
+	err = json.Unmarshal([]byte(payResponse.DataContent), &data)
+	if err != nil {
+		return nil, fmt.Errorf("解析响应失败: %v", err)
+	}
 
-	return payResponse.DataContent, nil
+	return &data, nil
+}
+
+// CloseOrder 订单关闭
+func (s *PaymentService) CloseOrder(outTradeNo string) (*models.CloseOrderData, error) {
+
+	// 构建请求内容
+	content := fmt.Sprintf("{\"merId\":\"%s\",\"terId\":\"%s\",\"tradeNo\":\"%s\"}",
+		s.config.MerchantID, s.config.TerminalID, outTradeNo)
+
+	// 生成签名
+	signStr, err := utils.Sign(content, s.config.PrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("生成签名失败: %v", err)
+	}
+
+	// 构建请求参数
+	mapParams := url.Values{}
+	mapParams.Set("method", consts.MethodOrderQuery)
+	mapParams.Set("merId", s.config.MerchantID)
+	mapParams.Set("terId", s.config.TerminalID)
+	mapParams.Set("bizContent", content)
+	mapParams.Set("charset", "UTF-8")
+	mapParams.Set("signStr", signStr)
+	mapParams.Set("version", "1.0")
+	mapParams.Set("format", "json")
+	mapParams.Set("signType", "RSA")
+	mapParams.Set("signSn", "1")
+	mapParams.Set("ncrptnSn", "1")
+	mapParams.Set("timestamp", time.Now().Format("20060102150405"))
+
+	// 发送请求
+	response, err := s.httpClient.Post(s.getHost(), mapParams)
+	if err != nil {
+		return nil, fmt.Errorf("发送退款请求失败: %v", err)
+	}
+
+	// 解析响应
+	var payResponse models.PayResponse
+	err = json.Unmarshal([]byte(response), &payResponse)
+	if err != nil {
+		return nil, fmt.Errorf("解析响应失败: %v", err)
+	}
+
+	// 检查返回码
+	if payResponse.ReturnCode != "SUCCESS" {
+		return nil, fmt.Errorf("退款请求失败: %s", payResponse.ReturnMsg)
+	}
+
+	// 验证响应签名
+	verify, err := utils.VerifySign(payResponse.DataContent, payResponse.SignStr, s.config.BFPublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("验证响应签名失败: %v", err)
+	}
+	if !verify {
+		return nil, fmt.Errorf("签名验不通过")
+	}
+
+	var data models.CloseOrderData
+	err = json.Unmarshal([]byte(payResponse.DataContent), &data)
+	if err != nil {
+		return nil, fmt.Errorf("解析响应失败: %v", err)
+	}
+
+	return &data, nil
 }
 
 // RefundOrder 退款请求
@@ -265,8 +336,6 @@ func (s *PaymentService) RefundOrder(outTradeNo, outRefundNo string, refundAmoun
 	if !verify {
 		fmt.Println("警告：响应签名验证失败")
 	}
-
-	fmt.Println("退款请求成功")
 
 	return payResponse.DataContent, nil
 }
