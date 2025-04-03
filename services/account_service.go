@@ -190,10 +190,7 @@ func (s *AccountService) OpenAccountQuery(req *models.OpenAccountQueryRequest) (
 }
 
 // BalanceQuery 余额查询接口
-func (s *AccountService) BalanceQuery(req *models.BalanceQueryRequest) (string, error) {
-	fmt.Println("==========================")
-	fmt.Println("宝付账簿个人/机构账户余额查询接口")
-	fmt.Println("==========================")
+func (s *AccountService) BalanceQuery(req *models.BalanceQueryRequest) (*models.BalanceQueryResponse, error) {
 
 	// 构建Header参数
 	headerPost := make(map[string]string)
@@ -209,44 +206,49 @@ func (s *AccountService) BalanceQuery(req *models.BalanceQueryRequest) (string, 
 	// 构建Body数据
 	bodyData := make(map[string]interface{})
 	bodyData["version"] = "4.0.0"
-	bodyData["acctType"] = req.AcctType
 	bodyData["contractNo"] = req.ContractNo
+	bodyData["accType"] = req.AcctType
 
 	contentData["body"] = bodyData
 
 	// 将请求数据转换为JSON
 	jsonObject, err := json.Marshal(contentData)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	fmt.Println("JSON：", string(jsonObject))
+	fmt.Println("JSON: ", string(jsonObject))
 
 	// 加密请求数据
 	dataContent, err := utils.EncryptByPFXFile(string(jsonObject), s.config.PrivateKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	headerPost["content"] = dataContent
 
 	// 发送请求
 	response, err := utils.Post(headerPost, s.getHost(consts.MethodBalanceQuery), "json")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	fmt.Println("返回：", string(response))
 
 	if len(response) == 0 {
-		return "", fmt.Errorf("返回异常！")
+		return nil, fmt.Errorf("返回异常！")
 	}
 
 	// 解密返回数据
 	rPostString, err := utils.DecryptByCERFile(string(response), s.config.BFPublicKey, s.config.BFPublicKeyPem)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	fmt.Println("解密明文：", rPostString)
 
-	return rPostString, nil
+	var balanceQueryResponse models.BalanceQueryResponse
+	err = json.Unmarshal([]byte(rPostString), &balanceQueryResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &balanceQueryResponse, nil
 }
 
 // Transfer 账户间转账接口

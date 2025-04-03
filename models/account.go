@@ -81,16 +81,26 @@ type AccountModifyRequest struct {
 
 // BalanceQueryRequest 余额查询请求参数
 type BalanceQueryRequest struct {
-	// 请求头
-	MemberId   string `json:"memberId"`   // 商户号
-	TerminalId string `json:"terminalId"` // 终端号
-	ServiceTp  string `json:"serviceTp"`  // 服务类型
-	VerifyType string `json:"verifyType"` // 验证类型
-
-	// 请求体
-	Version    string `json:"version"`    // 版本号
 	AcctType   string `json:"acctType"`   // 账户类型：1个人，2商户
 	ContractNo string `json:"contractNo"` // 合同号（客户账户）
+}
+
+type BalanceQueryResponse struct {
+	Body struct {
+		RetCode      int     `json:"retCode"`      // 返回码 1 成功 0 失败
+		ErrorCode    string  `json:"errorCode"`    // 错误码
+		ErrorMsg     string  `json:"errorMsg"`     // 错误原因
+		AvailableBal float64 `json:"availableBal"` // 账簿可用余额,单位：元;可用于提现
+		PendingBal   float64 `json:"pendingBal"`   // 在途资金余额,单位：元
+		CurrBal      float64 `json:"currBal"`      // 账簿余额,单位：元;账簿余额=可用余额(availableBal)+在途余额(pendingBal)+冻结金额
+	} `json:"body"`
+	Header struct {
+		MemberId    string `json:"memberId"`    // 商户号
+		TerminalId  string `json:"terminalId"`  // 终端号
+		ServiceTp   string `json:"serviceTp"`   // 服务类型
+		SysRespCode string `json:"sysRespCode"` // 返回码
+		SysRespDesc string `json:"sysRespDesc"` // 返回信息
+	} `json:"header"`
 }
 
 // TransferRequest 转账请求参数
