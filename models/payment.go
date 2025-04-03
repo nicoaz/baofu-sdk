@@ -130,6 +130,54 @@ type QueryOrderData struct {
 	ClearingDate string `json:"clearingDate"` // 清算日期
 }
 
+type ShareOrderRequest struct {
+	MerId            string `json:"merId"`            // 商户号
+	TerId            string `json:"terId"`            // 终端号
+	OriginTradeNo    string `json:"originTradeNo"`    // 原支付订单宝付交易号
+	OriginOutTradeNo string `json:"originOutTradeNo"` // 原支付订单商户订单号
+
+	TxnTime        string           `json:"txnTime"`        // 交易时间
+	OutTradeNo     string           `json:"outTradeNo"`     // 分账订单号
+	NotifyUrl      string           `json:"notifyUrl"`      // 异步通知地址
+	SharingDetails []SharingDetails `json:"sharingDetails"` // 分账信息
+}
+
+type SharingDetails struct {
+	SharingMerId string `json:"sharingMerId"` // 宝付支付分配的商户号
+	SharingAmt   int    `json:"sharingAmt"`   // 分账金额，单位：分，如1元则传入100
+}
+
+type ShareOrderContent struct {
+	AgentMerID   string `json:"agentMerId"`   // 代理商商户号
+	AgentTerID   string `json:"agentTerId"`   // 代理商终端号
+	MerID        string `json:"merId"`        // 商户号
+	TerID        string `json:"terId"`        // 终端号
+	ResultCode   string `json:"resultCode"`   // 业务结果
+	ErrCode      string `json:"errCode"`      // 错误代码 当业务结果FAIL时，返回错误代码
+	ErrMsg       string `json:"errMsg"`       // 错误描述 当业务结果为FAIL时，返回错误描述
+	TradeNo      string `json:"tradeNo"`      // 宝付订单号
+	TxnState     string `json:"txnState"`     // 订单状态
+	FinishTime   string `json:"finishTime"`   // 完成时间
+	SuccAmt      int    `json:"succAmt"`      // 分账成功金额 单位：分
+	ClearingDate string `json:"clearingDate"` // 清算日期
+}
+
+type QueryShareOrderData struct {
+	AgentMerID   string `json:"agentMerId"`   // 代理商商户号
+	AgentTerID   string `json:"agentTerId"`   // 代理商终端号
+	MerID        string `json:"merId"`        // 商户号
+	TerID        string `json:"terId"`        // 终端号
+	TradeNo      string `json:"tradeNo"`      // 宝付分账交易号
+	OutTradeNo   string `json:"outTradeNo"`   // 商户分账订单号
+	TxnState     string `json:"txnState"`     // 订单状态 详见附录订单状态
+	FinishTime   string `json:"finishTime"`   // 完成时间
+	SuccAmt      string `json:"succAmt"`      // 分账成功金额 单位：分
+	ClearingDate string `json:"clearingDate"` // 清算日期
+	ResultCode   string `json:"resultCode"`   // 业务结果 SUCCESS：成功 FAIL：失败
+	ErrCode      string `json:"errCode"`      // 错误代码 当业务结果FAIL时，返回错误代码
+	ErrMsg       string `json:"errMsg"`       // 错误描述 当业务结果为FAIL时，返回错误描述
+}
+
 type CloseOrderData struct {
 	AgentMerID string `json:"agentMerId"` // 代理商商户号
 	AgentTerID string `json:"agentTerId"` // 代理商终端号

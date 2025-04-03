@@ -95,25 +95,33 @@ type BalanceQueryRequest struct {
 
 // TransferRequest 转账请求参数
 type TransferRequest struct {
-	// 请求头
-	MemberId   string `json:"memberId"`   // 商户号
-	TerminalId string `json:"terminalId"` // 终端号
-	ServiceTp  string `json:"serviceTp"`  // 服务类型
-	VerifyType string `json:"verifyType"` // 验证类型
+	PayerNo       string  `json:"payerNo"`       // 付款方账号
+	PayeeNo       string  `json:"payeeNo"`       // 收款方账号
+	TransSerialNo string  `json:"transSerialNo"` // 交易流水号
+	DealAmount    float64 `json:"dealAmount"`    // 交易金额 BigDecimal 单位元
+}
 
-	// 请求体
-	Version        string `json:"version"`        // 版本号
-	SrcAcctNo      string `json:"srcAcctNo"`      // 源账户号
-	DestAcctNo     string `json:"destAcctNo"`     // 目标账户号
-	TransAmt       string `json:"transAmt"`       // 转账金额
-	TransId        string `json:"transId"`        // 交易ID
-	TransDate      string `json:"transDate"`      // 交易日期
-	TransTime      string `json:"transTime"`      // 交易时间
-	CurType        string `json:"curType"`        // 币种
-	TransSummary   string `json:"transSummary"`   // 交易摘要
-	ReservedExpand string `json:"reservedExpand"` // 扩展字段
-
-	NotifyUrl string `json:"notifyUrl"` // 异步通知地址
+type TransferResponse struct {
+	Body struct {
+		RetCode       int     `json:"retCode"`       // 返回码 1 成功 0 失败
+		ErrorCode     string  `json:"errorCode"`     // 错误码
+		ErrorMsg      string  `json:"errorMsg"`      // 错误原因
+		TransSerialNo string  `json:"transSerialNo"` // 请求流水号
+		BusinessNo    string  `json:"businessNo"`    // 业务流水号
+		PayerNo       string  `json:"payerNo"`       // 付款方(二级子商户号)
+		PayeeNo       string  `json:"payeeNo"`       // 收款方(二级子商户号)
+		DealAmount    float64 `json:"dealAmount"`    // 转账金额,单位：元
+		FeeAmount     float64 `json:"feeAmount"`     // 手续费金额,单位：元
+		State         int     `json:"state"`         // 订单状态 1成功 2失败
+		TransRemark   string  `json:"transRemark"`   // 失败原因
+	} `json:"body"`
+	Header struct {
+		MemberId    string `json:"memberId"`    // 商户号
+		TerminalId  string `json:"terminalId"`  // 终端号
+		ServiceTp   string `json:"serviceTp"`   // 服务类型
+		SysRespCode string `json:"sysRespCode"` // 返回码
+		SysRespDesc string `json:"sysRespDesc"` // 返回信息
+	} `json:"header"`
 }
 
 // WithdrawRequest 提现请求参数

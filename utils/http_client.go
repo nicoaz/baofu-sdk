@@ -53,6 +53,8 @@ func (c *HTTPClient) Get(url string, params url.Values) (string, error) {
 
 // Post 发送POST请求
 func (c *HTTPClient) Post(url string, params url.Values) (string, error) {
+	fmt.Println("发送请求:", url, params.Encode())
+
 	// 发送请求
 	resp, err := c.client.PostForm(url, params)
 	if err != nil {
