@@ -136,26 +136,56 @@ type TransferResponse struct {
 
 // WithdrawRequest 提现请求参数
 type WithdrawRequest struct {
-	// 请求头
-	MemberId   string `json:"memberId"`   // 商户号
-	TerminalId string `json:"terminalId"` // 终端号
-	ServiceTp  string `json:"serviceTp"`  // 服务类型
-	VerifyType string `json:"verifyType"` // 验证类型
+	Version          string  `json:"version"`          // 版本号
+	ContractNo       string  `json:"contractNo"`       // 客户账户号
+	DirectPlatformNo string  `json:"directPlatformNo"` // 上级客户账户号
+	TransSerialNo    string  `json:"transSerialNo"`    // 商户订单号
+	DealAmount       float64 `json:"dealAmount"`       // 提现金额,单位：元
+	ReturnUrl        string  `json:"returnUrl"`        // 提现结果异步通知地址，通知参数详见提现结果通知
+	FeeMemberId      string  `json:"feeMemberId"`      // 用户自己承担手续费必传，与客户号contractNo一致需用户承担手续费时要提前和商务申请配置
+	ReqReserved      string  `json:"reqReserved"`      // 原样返回保留字段
+}
 
-	// 请求体
-	Version        string `json:"version"`        // 版本号
-	SrcAcctNo      string `json:"srcAcctNo"`      // 源账户号
-	TransAmt       string `json:"transAmt"`       // 转账金额
-	TransId        string `json:"transId"`        // 交易ID
-	TransDate      string `json:"transDate"`      // 交易日期
-	TransTime      string `json:"transTime"`      // 交易时间
-	CurType        string `json:"curType"`        // 币种
-	TransSummary   string `json:"transSummary"`   // 交易摘要
-	ReservedExpand string `json:"reservedExpand"` // 扩展字段
-	CardNo         string `json:"cardNo"`         // 银行卡号
-	CardName       string `json:"cardName"`       // 银行卡姓名
-	CardBankCode   string `json:"cardBankCode"`   // 银行编码
-	DirectFlag     string `json:"directFlag"`     // 直连标志
+type WithdrawResponse struct {
+	Body struct {
+		ContractNo    string `json:"contractNo"`    // 客户账户号
+		RetCode       int    `json:"retCode"`       // 返回码 1 成功 0 失败
+		State         int    `json:"state"`         // 订单状态 1成功 2失败
+		TransRemark   string `json:"transRemark"`   // 失败原因
+		TransSerialNo string `json:"transSerialNo"` // 请求流水号
+	} `json:"body"`
+	Header struct {
+		MemberId    string `json:"memberId"`    // 商户号
+		TerminalId  string `json:"terminalId"`  // 终端号
+		ServiceTp   string `json:"serviceTp"`   // 服务类型
+		SysRespCode string `json:"sysRespCode"` // 返回码
+		SysRespDesc string `json:"sysRespDesc"` // 返回信息
+	} `json:"header"`
+}
 
-	NotifyUrl string `json:"notifyUrl"` // 异步通知地址
+type WithdrawQueryRequest struct {
+	Version       string `json:"version"`       // 版本号
+	TransSerialNo string `json:"transSerialNo"` // 交易流水号
+	TradeTime     string `json:"tradeTime"`     // 交易时间
+}
+
+type WithdrawQueryResponse struct {
+	Body struct {
+		ContractNo          string  `json:"contractNo"`          // 客户账户号
+		MemberId            string  `json:"memberId"`            // 商户号
+		RetCode             int     `json:"retCode"`             // 返回码 1 成功 0 失败
+		State               int     `json:"state"`               // 订单状态 1成功 2失败
+		TransFee            float64 `json:"transFee"`            // 手续费金额,单位：元
+		TransMoney          float64 `json:"transMoney"`          // 提现金额,单位：元
+		TransSerialNo       string  `json:"transSerialNo"`       // 请求流水号
+		TransferTotalAmount float64 `json:"transferTotalAmount"` // 提现总金额,单位：元
+		SuccessTime         string  `json:"successTime"`         // 提现成功时间
+	} `json:"body"`
+	Header struct {
+		MemberId    string `json:"memberId"`    // 商户号
+		TerminalId  string `json:"terminalId"`  // 终端号
+		ServiceTp   string `json:"serviceTp"`   // 服务类型
+		SysRespCode string `json:"sysRespCode"` // 返回码
+		SysRespDesc string `json:"sysRespDesc"` // 返回信息
+	} `json:"header"`
 }

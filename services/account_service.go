@@ -253,9 +253,6 @@ func (s *AccountService) BalanceQuery(req *models.BalanceQueryRequest) (*models.
 
 // Transfer 账户间转账接口
 func (s *AccountService) Transfer(req *models.TransferRequest) (*models.TransferResponse, error) {
-	fmt.Println("==========================")
-	fmt.Println("宝付账户间转账接口")
-	fmt.Println("==========================")
 
 	// 构建Header参数
 	headerPost := make(map[string]string)
@@ -283,7 +280,6 @@ func (s *AccountService) Transfer(req *models.TransferRequest) (*models.Transfer
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("JSON：", string(jsonObject))
 
 	// 加密请求数据
 	dataContent, err := utils.EncryptByPFXFile(string(jsonObject), s.config.PrivateKey)
@@ -297,7 +293,6 @@ func (s *AccountService) Transfer(req *models.TransferRequest) (*models.Transfer
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("返回：", string(response))
 
 	if len(response) == 0 {
 		return nil, fmt.Errorf("返回异常！")
@@ -309,8 +304,6 @@ func (s *AccountService) Transfer(req *models.TransferRequest) (*models.Transfer
 		return nil, err
 	}
 
-	fmt.Println("解密明文：", rPostString)
-
 	var transferResponse models.TransferResponse
 	err = json.Unmarshal([]byte(rPostString), &transferResponse)
 	if err != nil {
@@ -320,10 +313,7 @@ func (s *AccountService) Transfer(req *models.TransferRequest) (*models.Transfer
 }
 
 // Withdraw 提现接口
-func (s *AccountService) Withdraw(req *models.WithdrawRequest) (string, error) {
-	fmt.Println("==========================")
-	fmt.Println("宝付账簿提现接口")
-	fmt.Println("==========================")
+func (s *AccountService) Withdraw(req *models.WithdrawRequest) (*models.WithdrawResponse, error) {
 
 	// 构建Header参数
 	headerPost := make(map[string]string)
@@ -339,54 +329,110 @@ func (s *AccountService) Withdraw(req *models.WithdrawRequest) (string, error) {
 	// 构建Body数据
 	bodyData := make(map[string]interface{})
 	bodyData["version"] = "4.0.0"
-	bodyData["srcAcctNo"] = req.SrcAcctNo
-	bodyData["transAmt"] = req.TransAmt
-	bodyData["transId"] = req.TransId
-	bodyData["transDate"] = req.TransDate
-	bodyData["transTime"] = req.TransTime
-	bodyData["curType"] = req.CurType
-	bodyData["transSummary"] = req.TransSummary
-	bodyData["reservedExpand"] = req.ReservedExpand
-	bodyData["cardNo"] = req.CardNo
-	bodyData["cardName"] = req.CardName
-	bodyData["cardBankCode"] = req.CardBankCode
-	bodyData["directFlag"] = req.DirectFlag
-
-	bodyData["returnUrl"] = req.NotifyUrl
+	bodyData["contractNo"] = req.ContractNo
+	bodyData["directPlatformNo"] = req.DirectPlatformNo
+	bodyData["transSerialNo"] = req.TransSerialNo
+	bodyData["dealAmount"] = req.DealAmount
+	bodyData["returnUrl"] = req.ReturnUrl
+	bodyData["feeMemberId"] = req.FeeMemberId
+	bodyData["reqReserved"] = req.ReqReserved
 
 	contentData["body"] = bodyData
 
 	// 将请求数据转换为JSON
 	jsonObject, err := json.Marshal(contentData)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	fmt.Println("JSON：", string(jsonObject))
 
 	// 加密请求数据
 	dataContent, err := utils.EncryptByPFXFile(string(jsonObject), s.config.PrivateKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	headerPost["content"] = dataContent
 
 	// 发送请求
 	response, err := utils.Post(headerPost, s.getHost(consts.MethodWithdraw), "json")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	fmt.Println("返回：", string(response))
 
 	if len(response) == 0 {
-		return "", fmt.Errorf("返回异常！")
+		return nil, fmt.Errorf("返回异常！")
 	}
 
 	// 解密返回数据
 	rPostString, err := utils.DecryptByCERFile(string(response), s.config.BFPublicKey, s.config.BFPublicKeyPem)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
+
+	var withdrawResponse models.WithdrawResponse
+	err = json.Unmarshal([]byte(rPostString), &withdrawResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &withdrawResponse, nil
+}
+
+// WithdrawQuery 提现查询接口
+func (s *AccountService) WithdrawQuery(req *models.WithdrawQueryRequest) (*models.WithdrawQueryResponse, error) {
+
+	// 构建Header参数
+	headerPost := make(map[string]string)
+	headerPost["memberId"] = s.config.MerchantID
+	headerPost["terminalId"] = s.config.TerminalID
+	headerPost["serviceTp"] = consts.MethodWithdrawQuery
+	headerPost["verifyType"] = "1" // 加密方式目前只有1种，请填：1
+
+	// 构建请求数据
+	contentData := make(map[string]interface{})
+	contentData["header"] = headerPost
+
+	// 构建Body数据
+	bodyData := make(map[string]interface{})
+	bodyData["version"] = req.Version
+	bodyData["transSerialNo"] = req.TransSerialNo
+	bodyData["tradeTime"] = req.TradeTime
+
+	contentData["body"] = bodyData
+
+	// 将请求数据转换为JSON
+	jsonObject, err := json.Marshal(contentData)
+	if err != nil {
+		return nil, err
+	}
+
+	// 加密请求数据
+	dataContent, err := utils.EncryptByPFXFile(string(jsonObject), s.config.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+	headerPost["content"] = dataContent
+
+	// 发送请求
+	response, err := utils.Post(headerPost, s.getHost(consts.MethodWithdrawQuery), "json")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response) == 0 {
+		return nil, fmt.Errorf("返回异常！")
+	}
+
+	// 解密返回数据
+	rPostString, err := utils.DecryptByCERFile(string(response), s.config.BFPublicKey, s.config.BFPublicKeyPem)
+	if err != nil {
+		return nil, err
+	}
+
 	fmt.Println("解密明文：", rPostString)
 
-	return rPostString, nil
+	var withdrawQueryResponse models.WithdrawQueryResponse
+	err = json.Unmarshal([]byte(rPostString), &withdrawQueryResponse)
+	if err != nil {
+		return nil, err
+	}
+	return &withdrawQueryResponse, nil
 }
